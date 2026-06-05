@@ -1,0 +1,57 @@
+<div class="card">
+    <h3>Tracking Delivery Order (DO)</h3>
+    
+    <div class="search-box p-3 mb-4 bg-light">
+        <div class="form-group">
+            <label>Cari berdasarkan Nomor DO atau NIM:</label>
+            <input type="text" v-model="searchQuery" @keyup.enter="doSearch" @keyup.esc="resetSearch" placeholder="Ketik nomor DO / NIM dan tekan Enter..." class="form-control form-control-lg">
+            <small class="text-muted">Tekan 'Enter' untuk mencari, 'Esc' untuk reset pencarian.</small>
+        </div>
+    </div>
+
+    <div v-if="searchResult && searchResult.length > 0">
+        <div v-for="(res, index) in searchResult" :key="res.doNumber + '-' + index" class="tracking-result card mb-3">
+            <div class="card-header">
+                <h4>Nomor DO: {{ res.doNumber }}</h4>
+            </div>
+            <div class="card-body">
+                <div class="do-info">
+                    <p><strong>NIM:</strong> <span v-text="res.nim"></span></p>
+                    <p><strong>Nama:</strong> <span v-text="res.nama"></span></p>
+                    <p><strong>Ekspedisi:</strong> {{ res.ekspedisi }}</p>
+                    <p><strong>Tanggal Kirim:</strong> {{ formatDate(res.tanggalKirim) }}</p>
+                    <p><strong>Total Harga:</strong> {{ res.total | currency }}</p>
+                    <p><strong>Status Saat Ini:</strong> 
+                        <span class="badge badge-info">{{ res.status }}</span>
+                    </p>
+                </div>
+                
+                <h5 class="mt-4">Riwayat Perjalanan</h5>
+                <ul class="timeline">
+                    <li v-for="log in res.perjalanan" :key="log.waktu">
+                        <div class="time">{{ log.waktu }}</div>
+                        <div class="desc">{{ log.keterangan }}</div>
+                    </li>
+                </ul>
+
+                <div class="mt-4 add-progress-box">
+                    <h5>Update Status Perjalanan</h5>
+                    <form @submit.prevent="addProgress(res.doNumber, index)" class="form-inline">
+                        <input type="text" v-model="newProgress[res.doNumber]" placeholder="Masukkan keterangan baru..." required>
+                        <button type="submit" class="btn btn-primary">Tambah</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div v-else-if="hasSearched">
+        <div class="alert alert-warning">
+            Tidak ditemukan data untuk Nomor DO / NIM tersebut.
+        </div>
+    </div>
+    <div v-else>
+        <div class="alert alert-info">
+            Silakan gunakan kolom pencarian di atas untuk melacak Delivery Order Anda.
+        </div>
+    </div>
+</div>

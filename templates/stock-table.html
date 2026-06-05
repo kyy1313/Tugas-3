@@ -1,0 +1,153 @@
+<div class="filter-section card">
+    <h3>Filter & Sort</h3>
+    <div class="form-row">
+        <div class="form-group">
+            <label>UT-Daerah:</label>
+            <select v-model="filterUpbjj">
+                <option value="">Semua Daerah</option>
+                <option v-for="u in upbjjList" :key="u" :value="u">{{ u }}</option>
+            </select>
+        </div>
+        
+        <div class="form-group" v-if="filterUpbjj">
+            <label>Kategori MK:</label>
+            <select v-model="filterKategori">
+                <option value="">Semua Kategori</option>
+                <option v-for="k in kategoriList" :key="k" :value="k">{{ k }}</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="form-row mt-2">
+        <div class="form-group">
+            <label>Peringatan Stok:</label>
+            <div class="checkbox-group">
+                <input type="checkbox" id="chkReorder" v-model="filterReorder">
+                <label for="chkReorder">Hanya tampilkan stok menipis/kosong (Perlu Re-order)</label>
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label>Urutkan berdasarkan:</label>
+            <select v-model="sortBy">
+                <option value="">-- Pilih --</option>
+                <option value="judul">Judul MK (A-Z)</option>
+                <option value="qty">Stok (Terkecil-Terbesar)</option>
+                <option value="harga">Harga (Termurah-Termahal)</option>
+            </select>
+        </div>
+    </div>
+    
+    <div class="mt-2">
+        <button @click="resetFilter" class="btn btn-secondary btn-sm">Reset Filter</button>
+    </div>
+</div>
+
+<div class="card mt-4">
+    <div class="card-header flex-between">
+        <h3>Daftar Bahan Ajar</h3>
+        <button @click="openForm()" class="btn btn-primary">+ Tambah Bahan Ajar</button>
+    </div>
+
+    <!-- Form Tambah/Edit -->
+    <div v-if="showForm" class="form-box mt-3 mb-3 p-3">
+        <h4>{{ formMode === 'add' ? 'Tambah Data Baru' : 'Edit Data' }}</h4>
+        <form @submit.prevent="saveForm" @keyup.enter="saveForm">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Kode MK</label>
+                    <input type="text" v-model="formData.kode" required :disabled="formMode === 'edit'">
+                </div>
+                <div class="form-group">
+                    <label>Judul MK</label>
+                    <input type="text" v-model="formData.judul" required>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Kategori</label>
+                    <select v-model="formData.kategori" required>
+                        <option v-for="k in kategoriList" :key="k" :value="k">{{ k }}</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>UT Daerah</label>
+                    <select v-model="formData.upbjj" required>
+                        <option v-for="u in upbjjList" :key="u" :value="u">{{ u }}</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Lokasi Rak</label>
+                    <input type="text" v-model="formData.lokasiRak" required>
+                </div>
+                <div class="form-group">
+                    <label>Harga (Rp)</label>
+                    <input type="number" v-model.number="formData.harga" required>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Qty (Stok)</label>
+                    <input type="number" v-model.number="formData.qty" required>
+                </div>
+                <div class="form-group">
+                    <label>Safety Stok</label>
+                    <input type="number" v-model.number="formData.safety" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Catatan (HTML diperbolehkan)</label>
+                <input type="text" v-model="formData.catatanHTML">
+            </div>
+            <div class="mt-3">
+                <button type="submit" class="btn btn-success">Simpan (Enter)</button>
+                <button type="button" @click="closeForm" class="btn btn-secondary">Batal</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Kode - Judul</th>
+                    <th>Kategori</th>
+                    <th>UT-Daerah</th>
+                    <th>Lokasi Rak</th>
+                    <th>Harga</th>
+                    <th>Qty</th>
+                    <th>Safety Stok</th>
+                    <th>Status</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr v-if="filteredAndSortedData.length === 0">
+                    <td colspan="9" class="text-center">Tidak ada data ditemukan</td>
+                </tr>
+                <tr v-for="(item, index) in filteredAndSortedData" :key="item.kode">
+                    <td><strong>{{ item.kode }}</strong><br>{{ item.judul }}</td>
+                    <td>{{ item.kategori }}</td>
+                    <td>{{ item.upbjj }}</td>
+                    <td>{{ item.lokasiRak }}</td>
+                    <td>{{ item.harga | currency }}</td>
+                    <td>{{ item.qty | qtyFormat }}</td>
+                    <td>{{ item.safety | qtyFormat }}</td>
+                    <td class="has-tooltip">
+                        <status-badge :qty="item.qty" :safety="item.safety"></status-badge>
+                        <div class="tooltip" v-if="item.catatanHTML" v-html="item.catatanHTML"></div>
+                    </td>
+                    <td>
+                        <button @click="openForm(item)" class="btn btn-sm btn-info">Edit</button>
+                        <button @click="deleteItem(item)" class="btn btn-sm btn-danger">Hapus</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="mt-2 text-muted">
+        <small>Total: {{ filteredAndSortedData.length }} data | (Arahkan mouse ke Status untuk melihat catatan)</small>
+    </div>
+</div>

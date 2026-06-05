@@ -1,0 +1,56 @@
+<div class="card">
+    <h3>Buat Delivery Order Baru</h3>
+    <p>Nomor DO: <strong>{{ generatedDoNumber }}</strong></p>
+    
+    <form @submit.prevent="submitForm">
+        <div class="form-row">
+            <div class="form-group">
+                <label>NIM</label>
+                <input type="text" v-model="formData.nim" required placeholder="Masukkan NIM">
+            </div>
+            <div class="form-group">
+                <label>Nama Lengkap</label>
+                <input type="text" v-model="formData.nama" required placeholder="Masukkan Nama">
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>Ekspedisi</label>
+                <select v-model="formData.ekspedisi" required>
+                    <option value="" disabled>Pilih Ekspedisi</option>
+                    <option v-for="eks in ekspedisi" :key="eks.kode" :value="eks.nama">{{ eks.kode }} - {{ eks.nama }}</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Tanggal Kirim</label>
+                <input type="date" v-model="formData.tanggalKirim" required>
+                <small class="text-muted">Akan diformat menjadi: {{ formattedDatePreview }}</small>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Paket Bahan Ajar</label>
+            <select v-model="selectedPaketObj" required @change="updatePaketSelection">
+                <option value="" disabled>Pilih Paket</option>
+                <option v-for="p in paket" :key="p.kode" :value="p">
+                    {{ p.kode }} - {{ p.nama }}
+                </option>
+            </select>
+        </div>
+
+        <div v-if="selectedPaketObj" class="paket-detail bg-light p-3 mt-2 mb-3">
+            <h5>Detail Paket: {{ selectedPaketObj.nama }}</h5>
+            <p><strong>Isi Paket (Kode MK):</strong></p>
+            <ul>
+                <li v-for="isi in selectedPaketObj.isi" :key="isi">{{ isi }}</li>
+            </ul>
+            <p class="h4 mt-2"><strong>Total Harga: {{ selectedPaketObj.harga | currency }}</strong></p>
+        </div>
+
+        <div class="mt-4">
+            <button type="submit" class="btn btn-success btn-lg">Simpan Delivery Order</button>
+            <button type="button" @click="resetForm" class="btn btn-secondary btn-lg">Reset</button>
+        </div>
+    </form>
+</div>

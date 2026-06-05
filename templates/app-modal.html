@@ -1,0 +1,10 @@
+<div class="modal-overlay" v-if="isVisible" @click.self="cancel">
+    <div class="modal-content">
+        <h3>{{ title }}</h3>
+        <p v-html="message"></p>
+        <div class="modal-actions">
+            <button @click="cancel" class="btn btn-secondary">Batal</button>
+            <button @click="confirm" class="btn btn-danger">Hapus</button>
+        </div>
+    </div>
+</div>
